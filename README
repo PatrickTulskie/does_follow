@@ -1,0 +1,14 @@
+What is this?
+DoesFollow is basically a quick script I wrote to tell me if someone is following me on Twitter.  I figured others might find this useful so I pushed it to github.
+
+How do I use it?
+Get a copy of the repository, download the file, whatever.  Open it up and edit the @twitter_name and @twitter_password to whatever you want to use to authenticate against twitter.  You should also edit the default_user to your twitter username or whatever twitter user you want to check most frequently.  More on that later.
+
+Usage?
+does_follow PatrickTulskie - checks to see if PatrickTulskie is following the user specified as the default_user.
+does_follow PatrickTulskie Crystal - checks to see if Crystal is following PatrickTulskie.
+
+Responses are given with a simple "Nahhh." or a Kool-Aid Man "OH YEAH!"
+
+What else?
+I aliased it in my .bash_login to "df" so that I can pop open terminal and type "df SomeTwitterUser" and it will give me a response.  Very handy for checking whether or not someone who just followed you is still following you.
