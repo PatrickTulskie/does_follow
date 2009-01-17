@@ -1,49 +1,56 @@
-require 'net/http'
-require 'open-uri'
-require "rexml/document"
+require 'rubygems'
+require 'httparty'
 
-def is_following(user, test_follower)
-  # HTTP Pulling Variables
-  content = ""
-  source = "http://twitter.com/statuses/friends/#{test_follower}.xml"
-  # Loop setup variables
-  round_count = 0 # Keeps track of the number of users found on a given page.
-  continue = true
-  page_number = 1 # Keeps track of the page number we're on.
-  # Final variable
-  answer = false
-  
-  while continue
-    open("#{source}?page=#{page_number}", :http_basic_authentication => [@twitter_name, @twitter_password]) do |s| content = s.read end
-    following_data = REXML::Document.new(content)
+class Twitter
+  include HTTParty
+  base_uri 'twitter.com'
+  basic_auth 'user_name', 'password' # Edit these to match your own credentials.
+  default_params :output => 'xml'
+  format :xml
 
-    following_data.elements.each('users/user/screen_name') do |friend|
-      # Check to see if the friend is the user
-      answer = true if friend.text.casecmp(user) == 0
-      
-      # Keep track of how many we found in this round
-      round_count += 1
-    end
-    
-    # Let's bail out here if we got an answer or keep going if not.
-    if answer == true
-      continue = false
-    else
-      # Jump out if we saw no friends in the latest page
-      continue = round_count > 0 ? true : false
-      round_count = 0
-      page_number += 1
-    end
-    
+  def self.user_details(user_name)
+    get("/users/show/#{user_name}")
   end
   
-  return answer
+  def self.followers_for(user_name, page_number=1)
+    get("/statuses/followers/#{user_name}.xml", :query => {:page => page_number})["users"]
+  end
   
-end
+  def self.following_list_for(user_name, page_number=1)
+    get("/statuses/friends/#{user_name}.xml", :query => {:page => page_number})["users"]
+  end
+  
+  def self.follower_count(user_name)
+    self.user_details(user_name)["user"]["followers_count"]
+  end
+  
+  def self.following_count(user_name)
+    self.user_details(user_name)["user"]["friends_count"]
+  end
+  
+  def self.does_follow(user, test_follower)
+    # Prepare for the searching loop
+    page = 1 # Keeps track of the page number we're on.
+    answer = false # Is that your final answer?
 
-# Some globals
-@twitter_name = "" # Whatever Twitter user you want to authenticate with
-@twitter_password = "" # Password for the above user
+    # Collect some decision data
+    user_followers = self.follower_count(user).to_i
+    test_following = self.following_count(test_follower).to_i
+    query_self = user_followers < test_following ? true : false
+    
+    while !answer
+      name_list = query_self ? self.followers_for(user, page) : name_list = self.following_list_for(test_follower, page)
+      break if name_list.length == 0
+      
+      name_list.each do |current|
+        answer = true if current["screen_name"].casecmp(query_self ? test_follower : user) == 0
+      end
+      page += 1
+    end
+    return answer  
+  end
+
+end
 
 # Set this for your copy of the script.
 default_user = "PatrickTulskie" # If only one name is given this is what it will use
@@ -60,5 +67,5 @@ else
     user = ARGV[0]
     test_follower = ARGV[1]
   end
-  puts is_following(user, test_follower) ? "OH YEAH!" : "Nahhh."
+  puts Twitter.does_follow(user, test_follower) ? "OH YEAH!" : "Nahhh."
 end
