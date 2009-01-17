@@ -1,6 +1,10 @@
 What is this?
 DoesFollow is basically a quick script I wrote to tell me if someone is following me on Twitter.  I figured others might find this useful so I pushed it to github.
 
+What's Required?
+You're going to have to install HTTParty to use this.  It's a gem, and you can install it with:
+sudo gem install httparty
+
 How do I use it?
 Get a copy of the repository, download the file, whatever.  Open it up and edit the @twitter_name and @twitter_password to whatever you want to use to authenticate against twitter.  You should also edit the default_user to your twitter username or whatever twitter user you want to check most frequently.  More on that later.
 
